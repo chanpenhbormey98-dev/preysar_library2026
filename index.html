@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងបណ្ណាល័យ - សាលាបឋមសិក្សាព្រៃសរ</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase App & Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/database-compat.js"></script>
+    
+    <!-- Google Khmer Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        khmer: ['"Kantumruy Pro"', '"Battambang"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            font-family: 'Kantumruy Pro', 'Battambang', Arial, sans-serif !important;
+        }
+        body {
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <div id="app" class="flex-grow flex flex-col">
+        
+        <!-- Header -->
+        <header class="bg-sky-900 text-white shadow-lg sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row justify-between items-center py-3 gap-4">
+                    
+                    <!-- School Logo & Title -->
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <div class="bg-white p-0.5 rounded-full shadow-md w-14 h-14 flex items-center justify-center border-2 border-amber-400 overflow-hidden shrink-0">
+                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500'><circle cx='250' cy='250' r='245' fill='%23F2A900'/><circle cx='250' cy='250' r='225' fill='%231B2A80'/><circle cx='250' cy='250' r='185' fill='%23FFFFFF'/><circle cx='250' cy='250' r='175' fill='%231B2A80'/><path d='M110,250 A140,140 0 0,1 390,250' fill='none' id='t1'/><text fill='%23FFFFFF' font-size='24' font-weight='bold'><textPath href='%23t1' startOffset='50%' text-anchor='middle'>សាលាបឋមសិក្សាព្រៃសរ</textPath></text><path d='M390,250 A140,140 0 0,1 110,250' fill='none' id='t2'/><text fill='%23FFFFFF' font-size='18' font-weight='bold'><textPath href='%23t2' startOffset='50%' text-anchor='middle'>PREY SOR PRIMARY SCHOOL</textPath></text><path d='M150,250 Q180,130 250,130 Q320,130 350,250 Q320,370 250,370 Q180,370 150,250 Z' fill='%231B2A80' stroke='%23FFFFFF' stroke-width='5'/><g transform='translate(250,250) scale(1.1)' text-anchor='middle'><path d='M-50,0 Q-25,-20 0,0 Q25,-20 50,0 L50,40 Q25,20 0,40 Q-25,20 -50,40 Z' fill='%23FFFFFF' stroke='%231B2A80' stroke-width='3'/><line x1='0' y1='0' x2='0' y2='40' stroke='%231B2A80' stroke-width='3'/><path d='M-15,-20 L15,-20 L10,-50 L-10,-50 Z' fill='%23F2A900'/><path d='M0,-50 Q-15,-75 0,-100 Q15,-75 0,-50 Z' fill='%23E53E3E'/><path d='M0,-55 Q-8,-70 0,-85 Q8,-70 0,-55 Z' fill='%23F2A900'/><text y='70' fill='%23F2A900' font-size='22' font-weight='bold'>ព.ស</text></g><polygon points='75,250 85,230 95,250 85,270' fill='%23F2A900'/><polygon points='425,250 415,230 405,250 415,270' fill='%23F2A900'/></svg>" alt="សាលាបឋមសិក្សាព្រៃសរ" class="w-full h-full object-contain rounded-full">
+                        </div>
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-bold tracking-wide leading-tight text-amber-300">សាលាបឋមសិក្សាព្រៃសរ</h1>
+                            <p class="text-xs text-sky-100 font-medium">ប្រព័ន្ធគ្រប់គ្រងបណ្ណាល័យឌីជីថល (Digital Library System)</p>
+                        </div>
+                    </div>
+
+                    <!-- Auth Status -->
+                    <div id="auth-status-container" class="flex items-center gap-2"></div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav id="nav-tabs" class="flex space-x-2 overflow-x-auto pt-2 pb-1 border-t border-sky-800"></nav>
+            </div>
+        </header>
+
+        <!-- Notification Banner -->
+        <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+
+            <!-- TAB 1: DASHBOARD -->
+            <section id="view-dashboard" class="space-y-6 hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">សៀវភៅសរុបក្នុងបណ្ណាល័យ</p>
+                            <h3 id="stat-total-books" class="text-2xl font-bold text-slate-800">0</h3>
+                            <span class="text-xs text-sky-600 font-medium">ក្បាលសរុប</span>
+                        </div>
+                        <div class="text-3xl">📚</div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">សៀវភៅអាចខ្ចីបាន (ទំនេរ)</p>
+                            <h3 id="stat-available-books" class="text-2xl font-bold text-emerald-600">0</h3>
+                            <span class="text-xs text-slate-400 font-medium">ត្រៀមសម្រាប់ការខ្ចី</span>
+                        </div>
+                        <div class="text-3xl">✅</div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">កំពុងខ្ចី</p>
+                            <h3 id="stat-borrowed-books" class="text-2xl font-bold text-amber-600">0</h3>
+                            <span class="text-xs text-amber-600 font-medium">នៅដៃសិស្ស/គ្រូ</span>
+                        </div>
+                        <div class="text-3xl">📖</div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 mb-1">សំណើរង់ចាំអនុម័ត</p>
+                            <h3 id="stat-pending-requests" class="text-2xl font-bold text-rose-600">0</h3>
+                            <span class="text-xs text-rose-500 font-medium">ពីសិស្ស</span>
+                        </div>
+                        <div class="text-3xl">📥</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800 mb-2">⚡ កិច្ចការរហ័ស</h2>
+                            <p class="text-xs text-slate-500 mb-5">ប្រតិបត្តិការសម្រាប់គ្រូបណ្ណារក្ស</p>
+                            <div class="space-y-3" id="quick-action-buttons"></div>
+                        </div>
+                        <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400 text-center">
+                            បណ្ណាល័យសាលាបឋមសិក្សាព្រៃសរ &copy; ២០២៦
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold text-slate-800">🕒 ការខ្ចីថ្មីៗចុងក្រោយ</h2>
+                            <button onclick="switchTab('borrow')" class="text-xs text-sky-600 hover:text-sky-800 font-semibold">មើលទាំងអស់ ➔</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
+                                        <th class="py-3 px-3">អត្តលេខ</th>
+                                        <th class="py-3 px-3">សិស្ស/អ្នកខ្ចី</th>
+                                        <th class="py-3 px-3">សៀវភៅ</th>
+                                        <th class="py-3 px-3">ថ្ងៃខ្ចី</th>
+                                        <th class="py-3 px-3">ថ្ងៃត្រូវសង</th>
+                                        <th class="py-3 px-3 text-center">ស្ថានភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-recent-borrow-table" class="divide-y divide-slate-100 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: BOOK CATALOG -->
+            <section id="view-catalog" class="space-y-6 hidden">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto flex-grow">
+                        <input type="text" id="search-book-input" oninput="renderBooks()" placeholder="🔍 ស្វែងរកតាមចំណងជើង ឬកូដសៀវភៅ..." class="w-full max-w-md px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        <select id="filter-category-select" onchange="renderBooks()" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none text-slate-700">
+                            <option value="">គ្រប់ប្រភេទទាំងអស់</option>
+                            <option value="រឿងព្រេង">រឿងព្រេង / ប្រលោមលោក</option>
+                            <option value="វិទ្យាសាស្ត្រ">វិទ្យាសាស្ត្រ / ធម្មជាតិ</option>
+                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                            <option value="អក្សរសាស្ត្រខ្មែរ">អក្សរសាស្ត្រខ្មែរ</option>
+                            <option value="ចំណេះដឹងទូទៅ">ចំណេះដឹងទូទៅ</option>
+                        </select>
+                    </div>
+                    <div id="add-book-btn-container"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 text-xs font-bold uppercase border-b border-slate-200">
+                                    <th class="py-3.5 px-4">កូដសៀវភៅ</th>
+                                    <th class="py-3.5 px-4">ចំណងជើងសៀវភៅ</th>
+                                    <th class="py-3.5 px-4">អ្នកនិពន្ធ</th>
+                                    <th class="py-3.5 px-4">ប្រភេទ</th>
+                                    <th class="py-3.5 px-4">ចំនួនស្តុក</th>
+                                    <th class="py-3.5 px-4 text-center">ស្ថានភាព</th>
+                                    <th class="py-3.5 px-4 text-center">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="book-catalog-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: STUDENT BOOK REQUEST -->
+            <section id="view-request" class="space-y-6 hidden">
+                <div class="bg-gradient-to-r from-sky-800 to-sky-900 text-white p-6 rounded-2xl shadow-lg">
+                    <h2 class="text-xl font-bold mb-2">📱 ប្រព័ន្ធស្នើសុំខ្ចីសៀវភៅសម្រាប់សិស្ស</h2>
+                    <p class="text-xs text-sky-200 leading-relaxed">សិស្សអាចជ្រើសរើសឈ្មោះ និងសៀវភៅដែលចង់ខ្ចីទីនេះ រួចចុចដាក់ស្នើ។ បន្ទាប់មកយកកូដ ឬបង្ហាញអេក្រង់នេះជូនលោកគ្រូ-អ្នកគ្រូបណ្ណារក្សដើម្បីអនុម័តរហ័ស!</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+                            <span>✍️</span> បំពេញទម្រង់ស្នើសុំខ្ចី
+                        </h3>
+                        <form onsubmit="handleStudentRequestSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">ជ្រើសរើសឈ្មោះសិស្ស</label>
+                                <select id="student-req-name" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">ជ្រើសរើសសៀវភៅចង់ខ្ចី</label>
+                                <select id="student-req-book" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">ថ្ងៃចង់ខ្ចី</label>
+                                <input type="date" id="student-req-date" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm">
+                            </div>
+                            <button type="submit" class="w-full py-3 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-xl text-sm shadow-md transition">
+                                🚀 ផ្ញើសំណើរស្នើសុំខ្ចីសៀវភៅ
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-base mb-4 flex items-center gap-2">
+                            <span>📋</span> បញ្ជីសំណើស្នើសុំខ្ចីសៀវភៅទាំងអស់
+                        </h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
+                                        <th class="py-3 px-3">កូដសំណើ</th>
+                                        <th class="py-3 px-3">ឈ្មោះសិស្ស</th>
+                                        <th class="py-3 px-3">សៀវភៅស្នើសុំ</th>
+                                        <th class="py-3 px-3">ថ្ងៃស្នើសុំ</th>
+                                        <th class="py-3 px-3 text-center">ស្ថានភាព</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-requests-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: BORROW & RETURN -->
+            <section id="view-borrow" class="space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-base font-bold text-slate-800">កំណត់ត្រាការខ្ចី និងសងសៀវភៅ (បណ្ណារក្ស)</h2>
+                        <span id="active-borrow-count" class="bg-amber-100 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-bold">0</span>
+                    </div>
+                    <div id="add-borrow-btn-container"></div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-600 text-xs font-bold uppercase border-b border-slate-200">
+                                    <th class="py-3.5 px-4">អត្តលេខ</th>
+                                    <th class="py-3.5 px-4">ឈ្មោះអ្នកខ្ចី</th>
+                                    <th class="py-3.5 px-4">សៀវភៅដែលខ្ចី</th>
+                                    <th class="py-3.5 px-4">ថ្ងៃខ្ចី</th>
+                                    <th class="py-3.5 px-4">ថ្ងៃត្រូវសង</th>
+                                    <th class="py-3.5 px-4 text-center">ស្ថានភាព</th>
+                                    <th class="py-3.5 px-4 text-center">សកម្មភាព</th>
+                                </tr>
+                            </thead>
+                            <tbody id="borrow-log-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: BORROWERS -->
+            <section id="view-borrowers" class="space-y-6 hidden">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <input type="text" id="search-borrower-input" oninput="renderBorrowers()" placeholder="🔍 ស្វែងរកឈ្មោះសិស្ស/គ្រូ ឬថ្នាក់..." class="w-full max-w-md px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none">
+                    <div id="add-borrower-btn-container"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="borrowers-grid"></div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-slate-200 py-4 mt-8 text-center text-xs text-slate-500">
+            <p>សាលាបឋមសិក្សាព្រៃសរ - ប្រព័ន្ធគ្រប់គ្រងបណ្ណាល័យឌីជីថល</p>
+        </footer>
+    </div>
+
+    <!-- LOGIN & REGISTER MODAL -->
+    <div id="modal-login" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100">
+            <div class="bg-sky-900 text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="auth-modal-title" class="font-bold text-lg">🔑 ចូលប្រព័ន្ធ</h3>
+                <button onclick="closeModal('modal-login')" class="text-sky-200 hover:text-white text-lg">✖</button>
+            </div>
+            
+            <div class="p-6">
+                <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ឈ្មោះគណនី (Username)</label>
+                        <input type="text" id="login-username" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500" placeholder="admin ឬ student">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ពាក្យសម្ងាត់ (Password)</label>
+                        <input type="password" id="login-password" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500" placeholder="••••••••">
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-2">
+                        <button type="button" onclick="toggleAuthMode('register')" class="text-xs text-sky-700 hover:underline font-semibold">បង្កើតគណនីថ្មី?</button>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="closeModal('modal-login')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm">បោះបង់</button>
+                            <button type="submit" class="px-5 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-sm font-medium">ចូលប្រព័ន្ធ</button>
+                        </div>
+                    </div>
+                </form>
+
+                <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-4 hidden">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ឈ្មោះពេញ (Full Name)</label>
+                        <input type="text" id="reg-name" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500" placeholder="ឧ. ចាន់ សុខា">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ប្រភេទគណនី (Account Role)</label>
+                        <select id="reg-role" onchange="toggleAdminSecretField()" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white">
+                            <option value="student">👨‍🎓 សិស្ស (Student)</option>
+                            <option value="admin">👨‍🏫 គ្រូបណ្ណារក្ស (Admin)</option>
+                        </select>
+                    </div>
+
+                    <div id="admin-secret-container" class="hidden bg-amber-50 p-3 rounded-xl border border-amber-200">
+                        <label class="block text-xs font-bold text-amber-900 mb-1">🔒 លេខកូដសម្ងាត់បណ្ណារក្ស (Admin Secret Code)</label>
+                        <input type="password" id="reg-admin-code" class="w-full px-3.5 py-2 border border-amber-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-amber-500" placeholder="បញ្ចូលកូដសម្ងាត់បណ្ណារក្ស">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ឈ្មោះគណនី (Username)</label>
+                        <input type="text" id="reg-username" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500" placeholder="បង្កើត Username">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ពាក្យសម្ងាត់ (Password)</label>
+                        <input type="password" id="reg-password" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-sky-500" placeholder="••••••••">
+                    </div>
+                    
+                    <div class="flex justify-between items-center pt-2">
+                        <button type="button" onclick="toggleAuthMode('login')" class="text-xs text-sky-700 hover:underline font-semibold">មានគណនីរួចហើយ? ចូល</button>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="closeModal('modal-login')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm">បោះបង់</button>
+                            <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">ចុះឈ្មោះ</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOOK MODAL -->
+    <div id="modal-book" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 id="modal-book-title" class="font-bold text-slate-800 text-lg">បន្ថែមសៀវភៅថ្មី</h3>
+                <button onclick="closeModal('modal-book')" class="text-slate-400 hover:text-slate-600 text-lg">✖</button>
+            </div>
+            
+            <form id="form-book" onsubmit="handleBookSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="book-form-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">កូដសៀវភៅ</label>
+                    <input type="text" id="book-form-code" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm" placeholder="ឧ. BK-101">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ចំណងជើងសៀវភៅ</label>
+                    <input type="text" id="book-form-title" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm" placeholder="ឧ. រឿងទន្សាយនិងអណ្ដើក">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">អ្នកនិពន្ធ</label>
+                        <input type="text" id="book-form-author" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm" placeholder="ឧ. ក្រសួងអប់រំ">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ប្រភេទសៀវភៅ</label>
+                        <select id="book-form-category" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white">
+                            <option value="រឿងព្រេង">រឿងព្រេង / ប្រលោមលោក</option>
+                            <option value="វិទ្យាសាស្ត្រ">វិទ្យាសាស្ត្រ / ធម្មជាតិ</option>
+                            <option value="គណិតវិទ្យា">គណិតវិទ្យា</option>
+                            <option value="អក្សរសាស្ត្រខ្មែរ">អក្សរសាស្ត្រខ្មែរ</option>
+                            <option value="ចំណេះដឹងទូទៅ">ចំណេះដឹងទូទៅ</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ចំនួនសៀវភៅក្នុងស្តុក</label>
+                    <input type="number" id="book-form-copies" min="1" value="5" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm">
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('modal-book')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm">បោះបង់</button>
+                    <button type="submit" class="px-5 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-sm font-medium">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BORROW MODAL (MULTIPLE BOOKS) -->
+    <div id="modal-borrow" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-slate-100">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800 text-lg">កត់ត្រាការខ្ចីសៀវភៅ (ខ្ចីច្រើនក្បាល)</h3>
+                <button onclick="closeModal('modal-borrow')" class="text-slate-400 hover:text-slate-600 text-lg">✖</button>
+            </div>
+            <form id="form-borrow" onsubmit="handleBorrowSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ជ្រើសរើសសិស្ស / អ្នកខ្ចី</label>
+                    <select id="borrow-form-student" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ជ្រើសរើសសៀវភៅ (អាចធីកច្រើនក្បាល)</label>
+                    <div id="borrow-books-checkbox-container" class="max-h-48 overflow-y-auto border border-slate-200 rounded-xl p-3 space-y-2 bg-slate-50"></div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ថ្ងៃខ្ចី</label>
+                        <input type="date" id="borrow-form-date" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ថ្ងៃត្រូវសងវិញ</label>
+                        <input type="date" id="borrow-form-duedate" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('modal-borrow')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm">បោះបង់</button>
+                    <button type="submit" class="px-5 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded-xl text-sm font-medium">កត់ត្រាការខ្ចី</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BORROWER MODAL -->
+    <div id="modal-borrower" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100">
+            <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 id="modal-borrower-title" class="font-bold text-slate-800 text-lg">ចុះឈ្មោះសិស្ស / អ្នកខ្ចីថ្មី</h3>
+                <button onclick="closeModal('modal-borrower')" class="text-slate-400 hover:text-slate-600 text-lg">✖</button>
+            </div>
+            <form id="form-borrower" onsubmit="handleBorrowerSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="borrower-form-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">ឈ្មោះសិស្ស / គ្រូបង្រៀន</label>
+                    <input type="text" id="borrower-form-name" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm" placeholder="ឧ. សុខ ចាន់ថា">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">កម្រិត / ថ្នាក់</label>
+                        <select id="borrower-form-grade" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white">
+                            <option value="ថ្នាក់ទី១">ថ្នាក់ទី១</option>
+                            <option value="ថ្នាក់ទី២">ថ្នាក់ទី២</option>
+                            <option value="ថ្នាក់ទី៣">ថ្នាក់ទី៣</option>
+                            <option value="ថ្នាក់ទី៤">ថ្នាក់ទី៤</option>
+                            <option value="ថ្នាក់ទី៥">ថ្នាក់ទី៥</option>
+                            <option value="ថ្នាក់ទី៦">ថ្នាក់ទី៦</option>
+                            <option value="លោកគ្រូ-អ្នកគ្រូ">លោកគ្រូ-អ្នកគ្រូ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ភេទ</label>
+                        <select id="borrower-form-gender" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm bg-white">
+                            <option value="ប្រុស">ប្រុស</option>
+                            <option value="ស្រី">ស្រី</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('modal-borrower')" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-sm">បោះបង់</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript & Firebase Realtime Sync Logic -->
+    <script>
+        // ==========================================
+        // ⚙️ ដាក់ Firebase Configuration របស់អ្នកនៅទីនេះ
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const ADMIN_SECRET_CODE = "12021008024ពស";
+
+        let books = [];
+        let borrowers = [];
+        let borrowLogs = [];
+        let studentRequests = [];
+        let accounts = [];
+        let currentUser = null;
+
+        window.onload = function() {
+            loadDataFromFirebase();
+            
+            document.getElementById('borrow-form-date').valueAsDate = new Date();
+            document.getElementById('student-req-date').valueAsDate = new Date();
+            const duedate = new Date();
+            duedate.setDate(duedate.getDate() + 30);
+            document.getElementById('borrow-form-duedate').valueAsDate = duedate;
+        };
+
+        // 🔄 ទាញយក និងស៊ីញ៉ូទិន្នន័យពី Firebase Real-time ស្វ័យប្រវត្តិ
+        function loadDataFromFirebase() {
+            db.ref('/').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    books = data.books || getDefaultBooks();
+                    borrowers = data.borrowers || getDefaultBorrowers();
+                    borrowLogs = data.borrowLogs || [];
+                    studentRequests = data.studentRequests || [];
+                    accounts = data.accounts || getDefaultAccounts();
+                } else {
+                    // Default Data if empty
+                    books = getDefaultBooks();
+                    borrowers = getDefaultBorrowers();
+                    accounts = getDefaultAccounts();
+                    saveDataToFirebase();
+                }
+
+                // Load Current User from LocalStorage
+                const storedUser = localStorage.getItem('preysar_user_v14');
+                currentUser = storedUser ? JSON.parse(storedUser) : null;
+
+                renderApp();
+            });
+        }
+
+        function saveDataToFirebase() {
+            const data = {
+                books,
+                borrowers,
+                borrowLogs,
+                studentRequests,
+                accounts
+            };
+            db.ref('/').set(data);
+        }
+
+        function getDefaultBooks() {
+            return [
+                { id: "1", code: "BK-101", title: "រឿងទន្សាយនិងអណ្ដើក", author: "ក្រសួងអប់រំ", category: "រឿងព្រេង", copies: 8 },
+                { id: "2", code: "BK-102", title: "វិទ្យាសាស្ត្រថ្នាក់ទី៤", author: "ក្រសួងអប់រំ យុវជន និងកីឡា", category: "វិទ្យាសាស្ត្រ", copies: 12 },
+                { id: "3", code: "BK-103", title: "គណិតវិទ្យាថ្នាក់ទី៣", author: "ក្រសួងអប់រំ", category: "គណិតវិទ្យា", copies: 10 },
+                { id: "4", code: "BK-104", title: "ប្រវត្តិសាស្ត្រខ្មែរ និងកាយឫទ្ធិ", author: "គណៈកម្មការអប់រំ", category: "ចំណេះដឹងទូទៅ", copies: 5 },
+                { id: "5", code: "BK-105", title: "រឿងកុលាបប៉ៃលិន", author: "ញ៉ុក ថែម", category: "អក្សរសាស្ត្រខ្មែរ", copies: 6 },
+                { id: "6", code: "BK-106", title: "រឿងធនញ្ជ័យ", author: "រឿងព្រេងបុរាណ", category: "រឿងព្រេង", copies: 7 }
+            ];
+        }
+
+        function getDefaultBorrowers() {
+            return [
+                { id: "S-101", name: "ចាន់ សុខា", grade: "ថ្នាក់ទី៥", gender: "ស្រី" },
+                { id: "S-102", name: "ឃឹម វណ្ណៈ", grade: "ថ្នាក់ទី៦", gender: "ប្រុស" },
+                { id: "S-103", name: "លី ពិសិដ្ឋ", grade: "ថ្នាក់ទី៤", gender: "ប្រុស" },
+                { id: "S-104", name: "មាស សុភា", grade: "ថ្នាក់ទី៣", gender: "ស្រី" },
+                { id: "T-001", name: "អ្នកគ្រូ សុខ ម៉ាលី", grade: "លោកគ្រូ-អ្នកគ្រូ", gender: "ស្រី" }
+            ];
+        }
+
+        function getDefaultAccounts() {
+            return [
+                { username: "admin", password: "123", name: "លោកគ្រូ បណ្ណារក្ស", role: "admin" },
+                { username: "student", password: "123", name: "សិស្ស លី ពិសិដ្ឋ", role: "student" }
+            ];
+        }
+
+        function saveState() {
+            saveDataToFirebase();
+            if (currentUser) {
+                localStorage.setItem('preysar_user_v14', JSON.stringify(currentUser));
+            } else {
+                localStorage.removeItem('preysar_user_v14');
+            }
+            updateStats();
+        }
+
+        function renderApp() {
+            renderAuthUI();
+            renderNavigation();
+            
+            if (currentUser && currentUser.role === 'admin') {
+                switchTab('dashboard');
+            } else {
+                switchTab('catalog');
+            }
+
+            renderBooks();
+            renderStudentRequests();
+            renderBorrowLogs();
+            renderBorrowers();
+            renderDashboard();
+            populateModalOptions();
+            populateStudentRequestOptions();
+        }
+
+        function renderNavigation() {
+            const nav = document.getElementById('nav-tabs');
+            nav.innerHTML = '';
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+
+            let tabs = [
+                { id: 'catalog', label: '📚 បញ្ជីសៀវភៅ', public: true },
+                { id: 'request', label: '📱 ស្នើសុំខ្ចីសៀវភៅ (សិស្ស)', public: true },
+            ];
+
+            if (isAdmin) {
+                tabs.unshift({ id: 'dashboard', label: '📊 ផ្ទាំងគ្រប់គ្រង', public: false });
+                tabs.push({ id: 'borrow', label: '🔄 ការខ្ចី - សងសៀវភៅ', public: false });
+                tabs.push({ id: 'borrowers', label: '👨‍🎓 បញ្ជីសិស្ស / អ្នកខ្ចី', public: false });
+            }
+
+            tabs.forEach(t => {
+                const btn = document.createElement('button');
+                btn.id = `tab-${t.id}`;
+                btn.onclick = () => switchTab(t.id);
+                btn.className = "px-4 py-2 text-sm font-bold rounded-t-lg transition text-sky-100 hover:bg-sky-800";
+                btn.innerText = t.label;
+                nav.appendChild(btn);
+            });
+        }
+
+        function toggleAuthMode(mode) {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const title = document.getElementById('auth-modal-title');
+
+            if (mode === 'register') {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                title.textContent = "📝 ចុះឈ្មោះបង្កើតគណនីថ្មី";
+                toggleAdminSecretField();
+            } else {
+                regForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                title.textContent = "🔑 ចូលប្រព័ន្ធ";
+            }
+        }
+
+        function toggleAdminSecretField() {
+            const roleSelect = document.getElementById('reg-role');
+            const adminCodeContainer = document.getElementById('admin-secret-container');
+            const adminCodeInput = document.getElementById('reg-admin-code');
+
+            if (roleSelect.value === 'admin') {
+                adminCodeContainer.classList.remove('hidden');
+                adminCodeInput.setAttribute('required', 'true');
+            } else {
+                adminCodeContainer.classList.add('hidden');
+                adminCodeInput.removeAttribute('required');
+                adminCodeInput.value = '';
+            }
+        }
+
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const role = document.getElementById('reg-role').value;
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const adminCode = document.getElementById('reg-admin-code').value.trim();
+
+            if (role === 'admin') {
+                if (adminCode !== ADMIN_SECRET_CODE) {
+                    showToast("❌ លេខកូដសម្ងាត់បណ្ណារក្សមិនត្រឹមត្រូវទេ!", "error");
+                    return;
+                }
+            }
+
+            const existing = accounts.find(a => a.username === username);
+            if (existing) {
+                showToast("ឈ្មោះគណនីនេះមានគេប្រើប្រាស់រួចហើយ!", "error");
+                return;
+            }
+
+            accounts.push({ username, password, name, role });
+            saveState();
+            showToast("បង្កើតគណនីជោគជ័យ! សូមចូលប្រព័ន្ធ", "success");
+            toggleAuthMode('login');
+            document.getElementById('form-register').reset();
+        }
+
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            const found = accounts.find(a => a.username === username && a.password === password);
+
+            if (found) {
+                currentUser = { name: found.name, role: found.role, username: found.username };
+                saveState();
+                renderApp();
+                closeModal('modal-login');
+                showToast(`ចូលប្រព័ន្ធជោគជ័យ! ស្វាគមន៍ ${found.name}`, "success");
+                document.getElementById('form-login').reset();
+            } else {
+                showToast("ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវទេ!", "error");
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            saveState();
+            renderApp();
+            showToast("បានចាកចេញពីប្រព័ន្ធ!", "info");
+        }
+
+        function renderAuthUI() {
+            const authContainer = document.getElementById('auth-status-container');
+            const quickActionContainer = document.getElementById('quick-action-buttons');
+            const addBookBtnContainer = document.getElementById('add-book-btn-container');
+            const addBorrowBtnContainer = document.getElementById('add-borrow-btn-container');
+            const addBorrowerBtnContainer = document.getElementById('add-borrower-btn-container');
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+
+            if (currentUser) {
+                authContainer.innerHTML = `
+                    <div class="flex items-center gap-2 bg-sky-800 text-white text-xs px-3 py-1.5 rounded-xl border border-sky-600">
+                        <span>${isAdmin ? '👨‍🏫 គ្រូ:' : '👨‍🎓 សិស្ស:'} ${currentUser.name}</span>
+                    </div>
+                    <button onclick="logout()" class="px-3 py-1.5 text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition">
+                        🚪 ចាកចេញ
+                    </button>
+                `;
+            } else {
+                authContainer.innerHTML = `
+                    <button onclick="openModal('modal-login')" class="px-4 py-2 text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl transition shadow-md">
+                        🔑 ចូលប្រព័ន្ធ (Login)
+                    </button>
+                `;
+            }
+
+            if (isAdmin) {
+                quickActionContainer.innerHTML = `
+                    <button onclick="openBorrowModal()" class="w-full py-3 px-4 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-xl shadow-sm transition">
+                        ➕ កត់ត្រាការខ្ចីសៀវភៅថ្មី
+                    </button>
+                    <button onclick="openAddBookModal()" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition">
+                        📖 បញ្ចូលសៀវភៅថ្មីទៅក្នុងស្តុក
+                    </button>
+                    <button onclick="switchTab('request')" class="w-full py-3 px-4 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition">
+                        📱 ពិនិត្យសំណើស្នើសុំខ្ចីពីសិស្ស
+                    </button>
+                `;
+                addBookBtnContainer.innerHTML = `<button onclick="openAddBookModal()" class="px-4 py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-xl shadow-sm transition">➕ បន្ថែមសៀវភៅថ្មី</button>`;
+                addBorrowBtnContainer.innerHTML = `<button onclick="openBorrowModal()" class="px-4 py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-bold rounded-xl shadow-sm transition">➕ បង្កើតការខ្ចីសៀវភៅ</button>`;
+                addBorrowerBtnContainer.innerHTML = `<button onclick="openAddBorrowerModal()" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition">➕ ចុះឈ្មោះសិស្ស/អ្នកខ្ចីថ្មី</button>`;
+            } else {
+                addBookBtnContainer.innerHTML = ``;
+                addBorrowBtnContainer.innerHTML = ``;
+                addBorrowerBtnContainer.innerHTML = ``;
+            }
+        }
+
+        function switchTab(tabId) {
+            ['dashboard', 'catalog', 'request', 'borrow', 'borrowers'].forEach(id => {
+                const view = document.getElementById(`view-${id}`);
+                const tabBtn = document.getElementById(`tab-${id}`);
+                if (view) {
+                    if (id === tabId) view.classList.remove('hidden');
+                    else view.classList.add('hidden');
+                }
+                if (tabBtn) {
+                    if (id === tabId) {
+                        tabBtn.classList.add('bg-white', 'text-sky-900', 'shadow');
+                        tabBtn.classList.remove('text-sky-100', 'hover:bg-sky-800');
+                    } else {
+                        tabBtn.classList.remove('bg-white', 'text-sky-900', 'shadow');
+                        tabBtn.classList.add('text-sky-100', 'hover:bg-sky-800');
+                    }
+                }
+            });
+        }
+
+        function updateStats() {
+            const totalBooks = books.reduce((sum, b) => sum + parseInt(b.copies), 0);
+            const activeLogs = borrowLogs.filter(l => !l.returned);
+            const currentlyBorrowed = activeLogs.length;
+            const availableBooks = Math.max(0, totalBooks - currentlyBorrowed);
+            const pendingRequests = studentRequests.filter(r => r.status === 'pending').length;
+
+            if (document.getElementById('stat-total-books')) document.getElementById('stat-total-books').textContent = totalBooks;
+            if (document.getElementById('stat-available-books')) document.getElementById('stat-available-books').textContent = availableBooks;
+            if (document.getElementById('stat-borrowed-books')) document.getElementById('stat-borrowed-books').textContent = currentlyBorrowed;
+            if (document.getElementById('stat-pending-requests')) document.getElementById('stat-pending-requests').textContent = pendingRequests;
+            if (document.getElementById('active-borrow-count')) document.getElementById('active-borrow-count').textContent = currentlyBorrowed;
+        }
+
+        function renderDashboard() {
+            updateStats();
+            const recentBody = document.getElementById('dashboard-recent-borrow-table');
+            if (!recentBody) return;
+            recentBody.innerHTML = '';
+            const activeLogs = borrowLogs.filter(l => !l.returned).slice(0, 5);
+
+            if (activeLogs.length === 0) {
+                recentBody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-400">គ្មានទិន្នន័យការខ្ចីក្នុងប្រព័ន្ធទេ</td></tr>`;
+                return;
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            activeLogs.forEach(log => {
+                const isOverdue = log.dueDate < todayStr;
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 px-3 font-bold text-sky-800 text-xs">${log.studentId || 'S-101'}</td>
+                    <td class="py-3 px-3 font-bold text-slate-700">${log.studentName}</td>
+                    <td class="py-3 px-3 text-slate-600">${log.bookTitle}</td>
+                    <td class="py-3 px-3 text-slate-500 text-xs">${log.borrowDate}</td>
+                    <td class="py-3 px-3 text-slate-500 text-xs">${log.dueDate}</td>
+                    <td class="py-3 px-3 text-center">
+                        ${isOverdue ? `<span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-full font-bold">⚠️ ហួសកំណត់</span>` : `<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-bold">📖 កំពុងខ្ចី</span>`}
+                    </td>
+                `;
+                recentBody.appendChild(tr);
+            });
+        }
+
+        function renderBooks() {
+            const tbody = document.getElementById('book-catalog-tbody');
+            if (!tbody) return;
+            const search = document.getElementById('search-book-input').value.toLowerCase();
+            const categoryFilter = document.getElementById('filter-category-select').value;
+            tbody.innerHTML = '';
+
+            const filtered = books.filter(b => {
+                const matchSearch = b.title.toLowerCase().includes(search) || b.code.toLowerCase().includes(search);
+                const matchCategory = categoryFilter === '' || b.category === categoryFilter;
+                return matchSearch && matchCategory;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">ពុំរកឃើញសៀវភៅដែលស្វែងរកឡើយ</td></tr>`;
+                return;
+            }
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            filtered.forEach(book => {
+                const currentBorrowedCount = borrowLogs.filter(l => l.bookId === book.id && !l.returned).length;
+                const availableCount = book.copies - currentBorrowedCount;
+                const isAvailable = availableCount > 0;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-bold text-sky-800 text-xs">${book.code}</td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${book.title}</td>
+                    <td class="py-3.5 px-4 text-slate-600 text-xs">${book.author}</td>
+                    <td class="py-3.5 px-4"><span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-md border border-slate-200">${book.category}</span></td>
+                    <td class="py-3.5 px-4 text-xs font-semibold"><span class="text-emerald-600">${availableCount}</span> / <span class="text-slate-500">${book.copies} ក្បាល</span></td>
+                    <td class="py-3.5 px-4 text-center">${isAvailable ? `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-medium">នៅទំនេរ</span>` : `<span class="bg-rose-100 text-rose-800 text-xs px-2.5 py-1 rounded-full font-medium">អស់ពីស្តុក</span>`}</td>
+                    <td class="py-3.5 px-4 text-center space-x-1">
+                        ${isAdmin ? `<button onclick="editBook('${book.id}')" class="px-2 py-1 text-sky-600 hover:bg-sky-50 rounded transition font-bold">✏️ កែប្រែ</button><button onclick="deleteBook('${book.id}')" class="px-2 py-1 text-rose-500 hover:bg-rose-50 rounded transition font-bold">🗑️ លុប</button>` : `<button onclick="quickRequestBook('${book.id}')" class="px-3 py-1 bg-sky-700 hover:bg-sky-800 text-white rounded-lg text-xs font-bold transition">📱 ស្នើសុំខ្ចី</button>`}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function quickRequestBook(bookId) {
+            switchTab('request');
+            document.getElementById('student-req-book').value = bookId;
+        }
+
+        function renderStudentRequests() {
+            const tbody = document.getElementById('student-requests-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (studentRequests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">គ្មានសំណើស្នើសុំខ្ចីសៀវភៅទេ</td></tr>`;
+                return;
+            }
+
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            studentRequests.forEach(req => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                
+                let statusBadge = req.status === "pending" ? `<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full font-bold">⏳ រង់ចាំការអនុម័ត</span>` : req.status === "approved" ? `<span class="bg-emerald-100 text-emerald-800 text-xs px-2.5 py-1 rounded-full font-bold">✅ បានអនុម័តរួច</span>` : `<span class="bg-rose-100 text-rose-800 text-xs px-2.5 py-1 rounded-full font-bold">❌ បានបដិសេធ</span>`;
+
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-bold text-sky-800 text-xs">${req.id}</td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${req.studentName}</td>
+                    <td class="py-3.5 px-4 text-slate-700">${req.bookTitle}</td>
+                    <td class="py-3.5 px-4 text-slate-500 text-xs">${req.requestDate}</td>
+                    <td class="py-3.5 px-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            ${statusBadge}
+                            ${isAdmin && req.status === 'pending' ? `<button onclick="approveRequest('${req.id}')" class="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-sm">✅ អនុម័ត</button><button onclick="rejectRequest('${req.id}')" class="px-2 py-1 bg-rose-500 text-white rounded-lg text-xs font-bold">❌</button>` : ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleStudentRequestSubmit(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('student-req-name').value;
+            const bookId = document.getElementById('student-req-book').value;
+            const requestDate = document.getElementById('student-req-date').value;
+
+            const student = borrowers.find(b => b.id === studentId);
+            const book = books.find(b => b.id === bookId);
+
+            const newReq = {
+                id: "REQ-" + Math.floor(100 + Math.random() * 900),
+                studentId: student ? student.id : "S-101",
+                studentName: student ? student.name : "មិនស្គាល់",
+                bookId,
+                bookTitle: book ? book.title : "មិនស្គាល់",
+                requestDate,
+                status: "pending"
+            };
+
+            studentRequests.unshift(newReq);
+            saveState();
+            showToast(`ដាក់សំណើស្នើសុំជោគជ័យ! កូដសំណើគឺ ${newReq.id}`, "success");
+        }
+
+        function approveRequest(reqId) {
+            const req = studentRequests.find(r => r.id === reqId);
+            if (!req) return;
+            req.status = "approved";
+
+            const borrowDate = new Date().toISOString().split('T')[0];
+            const dueDateObj = new Date();
+            dueDateObj.setDate(dueDateObj.getDate() + 30);
+            const dueDate = dueDateObj.toISOString().split('T')[0];
+
+            const newLog = {
+                id: "BR-" + Math.floor(1000 + Math.random() * 9000),
+                studentId: req.studentId,
+                studentName: req.studentName,
+                bookId: req.bookId,
+                bookTitle: req.bookTitle,
+                borrowDate,
+                dueDate,
+                returned: false
+            };
+
+            borrowLogs.unshift(newLog);
+            saveState();
+            showToast(`បានអនុម័តសំណើ ${req.id} ជោគជ័យ!`, "success");
+        }
+
+        function rejectRequest(reqId) {
+            const req = studentRequests.find(r => r.id === reqId);
+            if (req) {
+                req.status = "rejected";
+                saveState();
+                showToast("បានបដិសេធសំណើនេះរួចរាល់!", "info");
+            }
+        }
+
+        function populateStudentRequestOptions() {
+            const studentSelect = document.getElementById('student-req-name');
+            if (!studentSelect) return;
+            studentSelect.innerHTML = borrowers.map(b => `<option value="${b.id}">${b.name} (${b.id} - ${b.grade})</option>`).join('');
+
+            const bookSelect = document.getElementById('student-req-book');
+            if (!bookSelect) return;
+            const availableBooks = books.filter(b => {
+                const activeCount = borrowLogs.filter(l => l.bookId === b.id && !l.returned).length;
+                return (b.copies - activeCount) > 0;
+            });
+            bookSelect.innerHTML = availableBooks.length === 0 ? `<option value="">-- គ្មានសៀវភៅទំនេរ --</option>` : availableBooks.map(b => `<option value="${b.id}">${b.title} (${b.code})</option>`).join('');
+        }
+
+        function populateModalOptions() {
+            const studentSelect = document.getElementById('borrow-form-student');
+            if (!studentSelect) return;
+            studentSelect.innerHTML = borrowers.map(b => `<option value="${b.id}">${b.name} (${b.id} - ${b.grade})</option>`).join('');
+
+            const bookContainer = document.getElementById('borrow-books-checkbox-container');
+            if (!bookContainer) return;
+            const availableBooks = books.filter(b => {
+                const activeCount = borrowLogs.filter(l => l.bookId === b.id && !l.returned).length;
+                return (b.copies - activeCount) > 0;
+            });
+
+            bookContainer.innerHTML = availableBooks.length === 0 ? `<p class="text-xs text-slate-400 text-center py-2">គ្មានសៀវភៅទំនេរ</p>` : availableBooks.map(b => {
+                const activeCount = borrowLogs.filter(l => l.bookId === b.id && !l.returned).length;
+                return `<label class="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200 cursor-pointer"><div class="flex items-center gap-2"><input type="checkbox" name="borrow-book-checkbox" value="${b.id}" class="w-4 h-4 text-sky-600 rounded"><span>${b.title} (${b.code})</span></div><span class="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">ទំនេរ: ${b.copies - activeCount}</span></label>`;
+            }).join('');
+        }
+
+        function handleBorrowSubmit(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('borrow-form-student').value;
+            const borrowDate = document.getElementById('borrow-form-date').value;
+            const dueDate = document.getElementById('borrow-form-duedate').value;
+            const checkboxes = document.querySelectorAll('input[name="borrow-book-checkbox"]:checked');
+
+            if (!studentId || checkboxes.length === 0) {
+                showToast("សូមជ្រើសរើសសិស្ស និងសៀវភៅយ៉ាងហោចណាស់ ១ ក្បាល!", "error");
+                return;
+            }
+
+            const student = borrowers.find(b => b.id === studentId);
+            checkboxes.forEach((cb, index) => {
+                const bookId = cb.value;
+                const book = books.find(b => b.id === bookId);
+                borrowLogs.unshift({
+                    id: Date.now().toString() + index,
+                    studentId: student ? student.id : "S-101",
+                    studentName: student ? student.name : "មិនស្គាល់",
+                    bookId,
+                    bookTitle: book ? book.title : "មិនស្គាល់",
+                    borrowDate,
+                    dueDate,
+                    returned: false
+                });
+            });
+
+            saveState();
+            closeModal('modal-borrow');
+            showToast(`កត់ត្រាការខ្ចីសៀវភៅចំនួន ${checkboxes.length} ក្បាលបានជោគជ័យ!`, "success");
+        }
+
+        function renderBorrowLogs() {
+            const tbody = document.getElementById('borrow-log-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            if (borrowLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">គ្មានកំណត់ត្រាការខ្ចីទេ</td></tr>`;
+                return;
+            }
+
+            borrowLogs.forEach(log => {
+                const isOverdue = !log.returned && log.dueDate < todayStr;
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-slate-50 transition border-b border-slate-100 ${log.returned ? 'opacity-75' : ''}`;
+                tr.innerHTML = `
+                    <td class="py-3.5 px-4 font-bold text-sky-800 text-xs">${log.studentId}</td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-800">${log.studentName}</td>
+                    <td class="py-3.5 px-4 text-slate-700">${log.bookTitle}</td>
+                    <td class="py-3.5 px-4 text-slate-500 text-xs">${log.borrowDate}</td>
+                    <td class="py-3.5 px-4 text-xs font-medium ${isOverdue ? 'text-rose-600 font-bold' : ''}">${log.dueDate}</td>
+                    <td class="py-3.5 px-4 text-center">${log.returned ? `<span class="bg-slate-200 text-slate-700 text-xs px-2.5 py-1 rounded-full">បានសង</span>` : isOverdue ? `<span class="bg-rose-100 text-rose-700 text-xs px-2.5 py-1 rounded-bold">⚠️ ហួសកំណត់</span>` : `<span class="bg-amber-100 text-amber-800 text-xs px-2.5 py-1 rounded-full">📖 កំពុងខ្ចី</span>`}</td>
+                    <td class="py-3.5 px-4 text-center space-x-1">
+                        ${!log.returned ? `<button onclick="returnBook('${log.id}')" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold">🔄 សង</button>` : `<span class="text-xs text-slate-400">✅ រួចរាល់</span>`}
+                        <button onclick="deleteBorrowLog('${log.id}')" class="px-2 py-1 text-rose-500 rounded font-bold">🗑️ លុប</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteBorrowLog(logId) {
+            if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
+                borrowLogs = borrowLogs.filter(l => l.id !== logId);
+                saveState();
+                showToast("បានលុបជោគជ័យ!", "info");
+            }
+        }
+
+        function renderBorrowers() {
+            const grid = document.getElementById('borrowers-grid');
+            if (!grid) return;
+            const search = document.getElementById('search-borrower-input').value.toLowerCase();
+            grid.innerHTML = '';
+            const filtered = borrowers.filter(b => b.name.toLowerCase().includes(search) || b.grade.toLowerCase().includes(search));
+
+            filtered.forEach(borrower => {
+                const activeCount = borrowLogs.filter(l => l.studentId === borrower.id && !l.returned).length;
+                const isTeacher = borrower.grade === 'លោកគ្រូ-អ្នកគ្រូ';
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center space-x-3 space-x-reverse">
+                            <div class="w-12 h-12 rounded-full ${isTeacher ? 'bg-amber-100' : 'bg-sky-100'} text-2xl flex items-center justify-center">${isTeacher ? '👨‍🏫' : '👨‍🎓'}</div>
+                            <div>
+                                <span class="text-xs font-bold px-2 py-0.5 rounded border">${borrower.id}</span>
+                                <h4 class="font-bold text-slate-800 mt-1">${borrower.name}</h4>
+                                <p class="text-xs text-slate-500">${borrower.grade} &bull; ${borrower.gender}</p>
+                            </div>
+                        </div>
+                        <div class="text-right"><span class="text-xs text-slate-400">កំពុងខ្ចី</span><span class="text-lg font-bold text-amber-600 block">${activeCount} ក្បាល</span></div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function handleBookSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('book-form-id').value || Date.now().toString();
+            const code = document.getElementById('book-form-code').value.trim();
+            const title = document.getElementById('book-form-title').value.trim();
+            const author = document.getElementById('book-form-author').value.trim();
+            const category = document.getElementById('book-form-category').value;
+            const copies = parseInt(document.getElementById('book-form-copies').value);
+
+            const existingIdx = books.findIndex(b => b.id === id);
+            if (existingIdx >= 0) books[existingIdx] = { id, code, title, author, category, copies };
+            else books.push({ id, code, title, author, category, copies });
+
+            saveState();
+            closeModal('modal-book');
+            showToast("រក្សាទុកសៀវភៅជោគជ័យ!", "success");
+        }
+
+        function editBook(id) {
+            const b = books.find(x => x.id === id);
+            if (!b) return;
+            document.getElementById('modal-book-title').textContent = "កែប្រែព័ត៌មានសៀវភៅ";
+            document.getElementById('book-form-id').value = b.id;
+            document.getElementById('book-form-code').value = b.code;
+            document.getElementById('book-form-title').value = b.title;
+            document.getElementById('book-form-author').value = b.author;
+            document.getElementById('book-form-category').value = b.category;
+            document.getElementById('book-form-copies').value = b.copies;
+            openModal('modal-book');
+        }
+
+        function deleteBook(id) {
+            if (confirm("លុបសៀវភៅនេះ?")) {
+                books = books.filter(b => b.id !== id);
+                saveState();
+                showToast("លុបជោគជ័យ!", "info");
+            }
+        }
+
+        function returnBook(logId) {
+            const log = borrowLogs.find(l => l.id === logId);
+            if (log) {
+                log.returned = true;
+                saveState();
+                showToast("សងសៀវភៅជោគជ័យ!", "success");
+            }
+        }
+
+        function openAddBookModal() {
+            document.getElementById('modal-book-title').textContent = "បន្ថែមសៀវភៅថ្មី";
+            document.getElementById('form-book').reset();
+            document.getElementById('book-form-id').value = "";
+            openModal('modal-book');
+        }
+
+        function openBorrowModal() {
+            populateModalOptions();
+            openModal('modal-borrow');
+        }
+
+        function openAddBorrowerModal() {
+            document.getElementById('modal-borrower-title').textContent = "ចុះឈ្មោះសិស្សថ្មី";
+            document.getElementById('form-borrower').reset();
+            openModal('modal-borrower');
+        }
+
+        function handleBorrowerSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('borrower-form-name').value.trim();
+            const grade = document.getElementById('borrower-form-grade').value;
+            const gender = document.getElementById('borrower-form-gender').value;
+            const nextId = "S-" + (borrowers.length + 101);
+
+            borrowers.push({ id: nextId, name, grade, gender });
+            saveState();
+            closeModal('modal-borrower');
+            showToast("ចុះឈ្មោះសិស្សជោគជ័យ!", "success");
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `${type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-slate-800'} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium`;
+            toast.innerHTML = `<span>${message}</span>`;
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
